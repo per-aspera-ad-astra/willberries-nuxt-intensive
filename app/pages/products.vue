@@ -1,7 +1,10 @@
 <script setup>
+  import { useCart } from '../composables/states';
+
   const route = useRoute();
   const field = computed(() => route.query.field || '');
   const name = computed(() => route.query.name || '');
+  const cart = useCart();
 
   const { data } = await useAsyncData(
     'filtered-products',
@@ -12,6 +15,24 @@
     },
     { watch: [field, name] }
   );
+
+  const addToCart = (product) => {
+    const findItem = cart.value.find((c) => c.id === product.id);
+
+    if (findItem) {
+      findItem.count++;
+    } else {
+      const cartItem = {
+        id: product.id,
+        name: product.name,
+        price: parseInt(product.price),
+        count: 1,
+      };
+
+      cart.value.push(cartItem);
+    }
+  };
+
   definePageMeta({
     layout: 'custom',
   });
@@ -29,7 +50,7 @@
         <div class="col-lg-3 col-sm-6" v-for="card in data" :key="card.id">
           <div class="goods-card">
             <span class="label" :class="{ 'd-none': !card.label }">{{
-              card.label.toUpperCase()
+              titleFormat(card.label)
             }}</span>
             <img :src="card.img" :alt="card.name" class="goods-image" />
             <h3 class="goods-title">{{ card.name }}</h3>
@@ -37,6 +58,7 @@
             <button
               class="button goods-card-btn add-to-cart"
               :data-id="card.id"
+              @click="addToCart(card)"
             >
               <span class="button-price">${{ card.price }}</span>
             </button>

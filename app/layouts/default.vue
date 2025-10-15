@@ -2,4 +2,5 @@
   <Header />
   <slot />
   <Footer />
+  <Cart />
 </template>
